@@ -1,0 +1,1 @@
+ALTER TABLE `customer` ADD `vong_nguc` VARCHAR(20) NULL DEFAULT NULL AFTER `information`, ADD `vong_eo` VARCHAR(20) NULL DEFAULT NULL AFTER `vong_nguc`;
