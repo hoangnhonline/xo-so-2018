@@ -91,8 +91,14 @@ class TestController extends Controller
         //$message = "2d da 22.98.1n. 13.41.1n. 95.13.1n. 29.95.1n. 29.41.1n...2d dav 76.41.95.1n da 41.02.1n 95.20.1n 41.20.1n 95.02.1n 13.51.1n t3";
         //$message = "2d.da.29.69.da1n.06.23.da2n.t5";
         $message = "2d.dacap 18.58-98-18-58.98-14.54-94.14-54.94-89.98-10.51-1n t4";
-        $message = "
-2d. 29.51.95.dv.2n. 95.07.22.41.dv.1n.2d da 53.22.1n 83.22.1n 29.51.2n dav 05.22.24.dv.1n .t2";
+        $message = "Ch bl 2852.10n 2852.d2n 
+2dai b 773.733.2n
+xc.126.20n 772.658.384.5n
+B 06.10n
+dc.dd.37.19.30n
+b.33.10n
+xc.651.146.172.107.30n 481.981.338.833.20n.251.042.468.145.551.583.10n
+T5";
         echo "<h3>".$message."</h3>";
         $message = (preg_replace('/([t])([0-9,{1,}])/', ' ', $message));
         $message = $this->formatMessage($message);
@@ -129,15 +135,18 @@ class TestController extends Controller
         }else{
 
             $betArr[] = $tmpArr;
-        }        
+        }   
+
         foreach($betArr as $arr){
             $betArrDetail[] = $this->parseBetToChannel($arr);
         }
         $betDetail = [];     
+
         foreach($betArrDetail as $k => $betChannelDetail){
-            $tmp2 = $this->parseDetail($betChannelDetail);
+            $tmp2 = $this->parseDetail($betChannelDetail);            
             $betDetail = array_merge($betDetail, $tmp2);
         }
+           
         $this->insertDB($betDetail);
     }
     function insertDB($betDetail){
@@ -147,16 +156,13 @@ class TestController extends Controller
             if(empty($oneBet) || in_array($k, $keyIgnore)){
                 continue;
             }         
+            $bet_type = $oneBet['bet_type'];
             $message_id = 1;
             $channelArr = $this->getChannelId($oneBet['channel']);
-            $bet_type_id = $this->getBetTypeId($oneBet['bet_type']); 
-            $bet_type = $oneBet['bet_type'];           
+            $bet_type_id = $this->getBetTypeId($bet_type); 
+            var_dump($bet_type);
             if(!in_array($bet_type, ['dv', 'dx', 'dxv', 'da'])){
-                foreach($channelArr as $channel_id){
-                    echo "<pre>";
-                    echo '---';
-                    print_r($channelArr);                
-                    echo "</pre>";
+                foreach($channelArr as $channel_id){                    
                     if(empty($channelArr)){
                         dd($oneBet);
                     }
@@ -169,11 +175,11 @@ class TestController extends Controller
                         'is_main' => 1,
                         'bet_day' => date('Y-m-d')                   
                     ];    
-                    // echo "<pre>";                    
-                    // print_r($arr);
-                    // echo "</pre>";
+                    echo "<pre>";                    
+                    print_r($arr);
+                    echo "</pre>";
 
-                    // Bet::create($arr);
+                    Bet::create($arr);
                 }
                 echo "<hr>";
             }elseif($bet_type == 'da' || $bet_type == 'dx'){                
@@ -272,8 +278,6 @@ class TestController extends Controller
 
                 }                
             }
-
-            
         }
     }
     function parseDetail($betArrDetail){  
@@ -295,7 +299,7 @@ class TestController extends Controller
                 foreach($arr_number as $numberBet){
                     $bettttt[] = [
                         'channel' => $channel_bet,
-                        'bet_type' => $bet_type,
+                        'bet_type' => $this->formatBetType($bet_type),
                         'number' => $numberBet,
                         'price' => $price
                     ];
@@ -398,8 +402,8 @@ class TestController extends Controller
     function isBetType($value){        
         return in_array($value, $this->betTypeList);
     }
-    function getBetTypeId($bet_type){
-        return $bet_type_id = BetType::where('keyword', $bet_type)->first()->id;
+    function getBetTypeId($bet_type){          
+        return $bet_type_id = BetType::where('keyword', $bet_type)->first()->id;    
     }
     function getChannelId($channel = ''){
         $channelSelected = [];
@@ -413,5 +417,19 @@ class TestController extends Controller
         }
 
         return $channelSelected;
+    }
+    function formatBetType($bet_type){
+        switch ($bet_type) {
+            case 'd':
+                $bet_type = 'da';
+                break;
+            case 'b' : 
+                $bet_type = 'bl';
+                break;
+            default:
+                # code...
+                break;
+        }
+        return $bet_type;
     }
 }
